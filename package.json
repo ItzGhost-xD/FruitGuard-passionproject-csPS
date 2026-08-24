@@ -1,0 +1,10 @@
+{
+  "name": "fruitguard",
+  "private": true,
+  "description": "FruitGuard research project — run frontend commands from the repo root or from /frontend",
+  "scripts": {
+    "install:web": "npm install --prefix frontend",
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend"
+  }
+}

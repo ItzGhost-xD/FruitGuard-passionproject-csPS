@@ -1,0 +1,133 @@
+{
+  "research_question": "How accurately can a computer-vision model identify common fruit diseases and pests from user-submitted images under real-world lighting and background conditions?",
+  "scope_note": "Start with 4 fruits and 2–4 conditions each. A smaller, well-evaluated set is stronger research than 100 poorly documented classes.",
+  "fruits": ["Apple", "Grape", "Peach", "Tomato"],
+  "classes": [
+    {
+      "id": "Apple___Apple_scab",
+      "fruit": "Apple",
+      "label": "Apple scab",
+      "status": "disease",
+      "plantvillage_folder": "Apple___Apple_scab",
+      "summary": "Fungal disease (Venturia inaequalis) that produces olive-brown, velvety spots on leaves and fruit. Lesions may crack or distort fruit surfaces.",
+      "look_for": ["Olive-green to brown leaf spots", "Velvety texture on lesions", "Scabby patches on fruit"]
+    },
+    {
+      "id": "Apple___Black_rot",
+      "fruit": "Apple",
+      "label": "Apple black rot",
+      "status": "disease",
+      "plantvillage_folder": "Apple___Black_rot",
+      "summary": "Fungal disease (Botryosphaeria obtusa) associated with leaf “frog-eye” spots and rotting fruit with concentric rings.",
+      "look_for": ["Circular leaf spots with purple margins", "Frog-eye pattern", "Fruit rot with zonate rings"]
+    },
+    {
+      "id": "Apple___Cedar_apple_rust",
+      "fruit": "Apple",
+      "label": "Cedar apple rust",
+      "status": "disease",
+      "plantvillage_folder": "Apple___Cedar_apple_rust",
+      "summary": "Fungal disease that alternates between apple and juniper/cedar hosts. Bright orange-yellow spots appear on apple leaves.",
+      "look_for": ["Bright yellow-orange leaf spots", "Reddish borders", "Small fruiting structures on the underside"]
+    },
+    {
+      "id": "Apple___healthy",
+      "fruit": "Apple",
+      "label": "Apple — healthy",
+      "status": "healthy",
+      "plantvillage_folder": "Apple___healthy",
+      "summary": "No disease signs in the image. Healthy apple leaves are typically uniform green without discrete lesions or rust-colored spots.",
+      "look_for": ["Even green color", "Intact leaf margin", "No scab, rust, or rot patterns"]
+    },
+    {
+      "id": "Grape___Black_rot",
+      "fruit": "Grape",
+      "label": "Grape black rot",
+      "status": "disease",
+      "plantvillage_folder": "Grape___Black_rot",
+      "summary": "Fungal disease (Guignardia bidwellii) causing reddish-brown leaf spots and shriveled, mummified berries.",
+      "look_for": ["Tan to reddish-brown leaf lesions", "Dark borders on spots", "Hard, black fruit mummies on clusters"]
+    },
+    {
+      "id": "Grape___Esca_Black_Measles",
+      "fruit": "Grape",
+      "label": "Grape esca (black measles)",
+      "status": "disease",
+      "plantvillage_folder": "Grape___Esca_(Black_Measles)",
+      "summary": "A complex trunk disease. Leaves show tiger-stripe patterns: yellow or red bands between veins, often with necrotic patches.",
+      "look_for": ["Interveinal striping", "Yellow or red bands", "Irregular necrotic areas"]
+    },
+    {
+      "id": "Grape___Leaf_blight",
+      "fruit": "Grape",
+      "label": "Grape leaf blight",
+      "status": "disease",
+      "plantvillage_folder": "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
+      "summary": "Foliar fungal spotting (often associated with Isariopsis / Pseudocercospora). Angular to irregular dark spots can coalesce.",
+      "look_for": ["Dark angular leaf spots", "Spots merging into blighted areas", "Lesions often on older leaves"]
+    },
+    {
+      "id": "Grape___healthy",
+      "fruit": "Grape",
+      "label": "Grape — healthy",
+      "status": "healthy",
+      "plantvillage_folder": "Grape___healthy",
+      "summary": "No disease signs in the image. Healthy grape leaves are typically broad, lobed, and evenly colored.",
+      "look_for": ["Uniform color", "Clear venation without striping", "No necrotic blotches"]
+    },
+    {
+      "id": "Peach___Bacterial_spot",
+      "fruit": "Peach",
+      "label": "Peach bacterial spot",
+      "status": "disease",
+      "plantvillage_folder": "Peach___Bacterial_spot",
+      "summary": "Bacterial disease (Xanthomonas) causing small angular leaf spots that may fall out, plus pitted or scabby fruit lesions.",
+      "look_for": ["Small angular water-soaked spots", "Shot-hole appearance on leaves", "Sunken fruit specks"]
+    },
+    {
+      "id": "Peach___healthy",
+      "fruit": "Peach",
+      "label": "Peach — healthy",
+      "status": "healthy",
+      "plantvillage_folder": "Peach___healthy",
+      "summary": "No disease signs in the image. Healthy peach leaves are typically lance-shaped and evenly green.",
+      "look_for": ["Even green lamina", "No shot-hole lesions", "Smooth fruit skin if fruit is visible"]
+    },
+    {
+      "id": "Tomato___Early_blight",
+      "fruit": "Tomato",
+      "label": "Tomato early blight",
+      "status": "disease",
+      "plantvillage_folder": "Tomato___Early_blight",
+      "summary": "Fungal disease (Alternaria) with target-like concentric rings on older leaves, often starting from the lower canopy.",
+      "look_for": ["Concentric “bulls-eye” rings", "Lesions on older leaves first", "Yellowing around spots"]
+    },
+    {
+      "id": "Tomato___Late_blight",
+      "fruit": "Tomato",
+      "label": "Tomato late blight",
+      "status": "disease",
+      "plantvillage_folder": "Tomato___Late_blight",
+      "summary": "Oomycete disease (Phytophthora infestans). Large, water-soaked or greasy lesions can expand rapidly in cool, wet weather.",
+      "look_for": ["Large irregular water-soaked lesions", "Pale green to brown blotches", "White fuzz on undersides in humid conditions"]
+    },
+    {
+      "id": "Tomato___Leaf_Mold",
+      "fruit": "Tomato",
+      "label": "Tomato leaf mold",
+      "status": "disease",
+      "plantvillage_folder": "Tomato___Leaf_Mold",
+      "summary": "Fungal disease (Passalora fulva) common in humid greenhouses. Pale spots on the upper leaf surface with olive mold beneath.",
+      "look_for": ["Pale yellow upper-surface patches", "Olive-green velvety growth underneath", "Often in dense, humid canopies"]
+    },
+    {
+      "id": "Tomato___healthy",
+      "fruit": "Tomato",
+      "label": "Tomato — healthy",
+      "status": "healthy",
+      "plantvillage_folder": "Tomato___healthy",
+      "summary": "No disease signs in the image. Healthy tomato leaflets are typically deep green without target spots or greasy blotches.",
+      "look_for": ["Uniform green leaflets", "No concentric rings", "No large water-soaked patches"]
+    }
+  ]
+}
