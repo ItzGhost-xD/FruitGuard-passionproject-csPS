@@ -7,7 +7,7 @@ from collections import defaultdict, Counter
 SEED = 42
 
 # Change only if your folders are somewhere else
-PLANTVILLAGE_ROOT = Path(r"..\PlantVillage-official")
+PLANTVILLAGE_ROOT = Path(r"C:\Datasets\PlantVillage-official")
 COLOR_ROOT = PLANTVILLAGE_ROOT / "raw" / "color"
 LEAF_MAP_PATH = PLANTVILLAGE_ROOT / "leaf-map.json"
 
