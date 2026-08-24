@@ -13,15 +13,9 @@ import os
 
 load_dotenv()
 
-username = os.getenv("KAGGLE_USERNAME")
-key = os.getenv("KAGGLE_KEY")
+
 kaggle_username = os.getenv("KAGGLE_USERNAME")
 kaggle_key = os.getenv("KAGGLE_KEY")
-
-if not kaggle_username or not kaggle_key:
-    raise RuntimeError(
-        "KAGGLE_USERNAME and KAGGLE_KEY must be set as environment variables."
-    )
 
 # Define the target directory
 data_dir = Path("ml/data/raw")
@@ -45,9 +39,13 @@ print()
 
 def try_kaggle_download():
     """Try to download using Kaggle API"""
+    if not kaggle_username or not kaggle_key:
+    raise RuntimeError(
+        "KAGGLE_USERNAME and KAGGLE_KEY must be set as environment variables."
+    )
+
     try:
         from kaggle import KaggleApi
-        import os
         
         print("Attempting Kaggle API download...")
         
