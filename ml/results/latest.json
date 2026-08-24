@@ -1,0 +1,26 @@
+{
+  "status": "trained_with_ood",
+  "note": "Models trained on sample dataset (140 placeholder images) with OOD phone-photo evaluation (70 images). For real results, download actual PlantVillage dataset.",
+  "models": [
+    {
+      "model_name": "mobilenet_v3",
+      "test_accuracy": 0.1429,
+      "test_images": 14,
+      "ood_accuracy": 0.0714,
+      "ood_images": 70,
+      "macro_f1": 0.1429,
+      "note": "Trained on placeholder images - not representative of real performance"
+    }
+  ],
+  "dataset_info": {
+    "source": "Sample placeholder images",
+    "train_images": 112,
+    "test_images": 14,
+    "ood_images": 70,
+    "total_images": 140,
+    "classes": 14,
+    "images_per_class": 10,
+    "ood_images_per_class": 5,
+    "note": "Replace with actual PlantVillage dataset for real research results"
+  }
+}

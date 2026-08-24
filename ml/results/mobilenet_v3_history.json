@@ -1,0 +1,61 @@
+{
+  "split": {
+    "n_total": 140,
+    "n_train": 112,
+    "n_val": 14,
+    "n_test": 14,
+    "class_counts": {
+      "Apple___Apple_scab": 10,
+      "Apple___Black_rot": 10,
+      "Apple___Cedar_apple_rust": 10,
+      "Apple___healthy": 10,
+      "Grape___Black_rot": 10,
+      "Grape___Esca_Black_Measles": 10,
+      "Grape___Leaf_blight": 10,
+      "Grape___healthy": 10,
+      "Peach___Bacterial_spot": 10,
+      "Peach___healthy": 10,
+      "Tomato___Early_blight": 10,
+      "Tomato___Late_blight": 10,
+      "Tomato___Leaf_Mold": 10,
+      "Tomato___healthy": 10
+    }
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 2.655886547906058,
+      "train_acc": 0.044642857142857144,
+      "val_loss": 2.7241923809051514,
+      "val_acc": 0.0
+    },
+    {
+      "epoch": 2,
+      "train_loss": 2.5758214678083147,
+      "train_acc": 0.13392857142857142,
+      "val_loss": 2.7511098384857178,
+      "val_acc": 0.0
+    },
+    {
+      "epoch": 3,
+      "train_loss": 2.4782919883728027,
+      "train_acc": 0.25892857142857145,
+      "val_loss": 2.7743301391601562,
+      "val_acc": 0.0
+    },
+    {
+      "epoch": 4,
+      "train_loss": 2.3957480021885464,
+      "train_acc": 0.30357142857142855,
+      "val_loss": 2.7987685203552246,
+      "val_acc": 0.0
+    },
+    {
+      "epoch": 5,
+      "train_loss": 2.270716803414481,
+      "train_acc": 0.3482142857142857,
+      "val_loss": 2.8425841331481934,
+      "val_acc": 0.0
+    }
+  ]
+}
