@@ -40,8 +40,8 @@ print()
 def try_kaggle_download():
     """Try to download using Kaggle API"""
     if not kaggle_username or not kaggle_key:
-    print("Kaggle credentials not found. Skipping Kaggle API download.")
-    return False
+        print("Kaggle credentials not found. Skipping Kaggle API download.")
+        return False
 
     try:
         from kaggle import KaggleApi
