@@ -10,6 +10,8 @@ from torchvision.datasets import ImageFolder
 
 from ml.config import BATCH_SIZE, IMAGE_SIZE, NUM_WORKERS, SEED, TEST_FRACTION, VAL_FRACTION
 from ml.taxonomy import class_ids, folder_to_id
+import csv
+from PIL import Image
 
 
 def train_transforms() -> transforms.Compose:
@@ -35,7 +37,30 @@ def eval_transforms() -> transforms.Compose:
         ]
     )
 
+class ManifestDataset(Dataset):
+    def __init__(self, rows, transform):
+        self.rows = rows
+        self.transform = transform
+        self.ids = class_ids()
+        self.class_to_idx = {
+            class_id: i for i, class_id in enumerate(self.ids)
+        }
 
+    def __len__(self):
+        return len(self.rows)
+
+    def __getitem__(self, index):
+        row = self.rows[index]
+
+        image = Image.open(row["path"]).convert("RGB")
+
+        if self.transform:
+            image = self.transform(image)
+
+        label = self.class_to_idx[row["class_name"]]
+
+        return image, label
+    
 class MappedImageFolder(Dataset):
     def __init__(self, root: Path, transform):
         allowed = folder_to_id()
@@ -93,42 +118,73 @@ def class_counts(labels: list[int]) -> dict[str, int]:
     return {ids[i]: counts.get(i, 0) for i in range(len(ids))}
 
 
-def make_loaders(data_root: Path, batch_size: int = BATCH_SIZE):
-    probe = MappedImageFolder(data_root, transform=None)
-    if len(probe) == 0:
+def make_loaders(
+    data_root=None,
+    batch_size: int = BATCH_SIZE,
+    manifest_path: Path = Path("ml/data/splits/fruitguard_split_manifest.csv"),
+):
+    if not manifest_path.exists():
         raise FileNotFoundError(
-            f"No in-scope images found under {data_root}. "
-            "Expected PlantVillage-style folders named in taxonomy.json."
+            f"Research split manifest not found: {manifest_path}"
         )
-    labels = [label for _, label in probe.samples]
-    train_idx, val_idx, test_idx = stratified_split(labels)
 
-    train_ds = MappedImageFolder(data_root, transform=train_transforms())
-    eval_ds = MappedImageFolder(data_root, transform=eval_transforms())
+    with open(manifest_path, newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+
+    train_rows = [r for r in rows if r["split"] == "train"]
+    val_rows = [r for r in rows if r["split"] == "val"]
+    test_rows = [r for r in rows if r["split"] == "test"]
+
+    train_ds = ManifestDataset(
+        train_rows,
+        transform=train_transforms(),
+    )
+
+    val_ds = ManifestDataset(
+        val_rows,
+        transform=eval_transforms(),
+    )
+
+    test_ds = ManifestDataset(
+        test_rows,
+        transform=eval_transforms(),
+    )
 
     train_loader = DataLoader(
-        Subset(train_ds, train_idx),
+        train_ds,
         batch_size=batch_size,
         shuffle=True,
         num_workers=NUM_WORKERS,
     )
+
     val_loader = DataLoader(
-        Subset(eval_ds, val_idx),
+        val_ds,
         batch_size=batch_size,
         shuffle=False,
         num_workers=NUM_WORKERS,
     )
+
     test_loader = DataLoader(
-        Subset(eval_ds, test_idx),
+        test_ds,
         batch_size=batch_size,
         shuffle=False,
         num_workers=NUM_WORKERS,
     )
+
     split_info = {
-        "n_total": len(probe),
-        "n_train": len(train_idx),
-        "n_val": len(val_idx),
-        "n_test": len(test_idx),
-        "class_counts": class_counts(labels),
+        "n_total": len(rows),
+        "n_train": len(train_rows),
+        "n_val": len(val_rows),
+        "n_test": len(test_rows),
+        "split_method": "leaf-group-aware manifest",
+        "seed": SEED,
     }
-    return train_loader, val_loader, test_loader, split_info, test_idx, probe.paths
+
+    return (
+        train_loader,
+        val_loader,
+        test_loader,
+        split_info,
+        None,
+        None,
+    )
