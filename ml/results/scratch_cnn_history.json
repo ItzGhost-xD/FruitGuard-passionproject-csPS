@@ -1,54 +1,68 @@
 {
   "split": {
-    "n_total": 140,
-    "n_train": 112,
-    "n_val": 14,
-    "n_test": 14,
-    "class_counts": {
-      "Apple___Apple_scab": 10,
-      "Apple___Black_rot": 10,
-      "Apple___Cedar_apple_rust": 10,
-      "Apple___healthy": 10,
-      "Grape___Black_rot": 10,
-      "Grape___Esca_Black_Measles": 10,
-      "Grape___Leaf_blight": 10,
-      "Grape___healthy": 10,
-      "Peach___Bacterial_spot": 10,
-      "Peach___healthy": 10,
-      "Tomato___Early_blight": 10,
-      "Tomato___Late_blight": 10,
-      "Tomato___Leaf_Mold": 10,
-      "Tomato___healthy": 10
-    }
+    "n_total": 13755,
+    "n_train": 9630,
+    "n_val": 2063,
+    "n_test": 2062,
+    "split_method": "leaf-group-aware manifest",
+    "seed": 42
   },
   "history": [
     {
       "epoch": 1,
-      "train_loss": 2.674213239124843,
-      "train_acc": 0.05357142857142857,
-      "val_loss": 2.64288330078125,
-      "val_acc": 0.07142857142857142
+      "train_loss": 1.4844420604616682,
+      "train_acc": 0.5600207684319833,
+      "val_loss": 1.4294212331369671,
+      "val_acc": 0.44983034415899176
     },
     {
       "epoch": 2,
-      "train_loss": 2.5827223573412215,
-      "train_acc": 0.15178571428571427,
-      "val_loss": 2.6504108905792236,
-      "val_acc": 0.0
+      "train_loss": 1.0083888466113082,
+      "train_acc": 0.7130841121495327,
+      "val_loss": 1.0839359527990995,
+      "val_acc": 0.6388754241396025
     },
     {
       "epoch": 3,
-      "train_loss": 2.534135341644287,
-      "train_acc": 0.11607142857142858,
-      "val_loss": 2.660356283187866,
-      "val_acc": 0.0
+      "train_loss": 0.7603385470242763,
+      "train_acc": 0.7860851505711319,
+      "val_loss": 1.141227095842477,
+      "val_acc": 0.6199709161415414
     },
     {
       "epoch": 4,
-      "train_loss": 2.5363576412200928,
-      "train_acc": 0.05357142857142857,
-      "val_loss": 2.6719532012939453,
-      "val_acc": 0.0
+      "train_loss": 0.6204088392101715,
+      "train_acc": 0.8251298026998961,
+      "val_loss": 1.0144144168942517,
+      "val_acc": 0.622879301987397
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.5045430522470088,
+      "train_acc": 0.8568016614745587,
+      "val_loss": 1.1196577736202282,
+      "val_acc": 0.6170625302956859
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.4505836192135499,
+      "train_acc": 0.8716510903426792,
+      "val_loss": 0.6592750255482553,
+      "val_acc": 0.752302472127969
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.398667064912594,
+      "train_acc": 0.8834890965732087,
+      "val_loss": 0.655796689658967,
+      "val_acc": 0.7954435288414929
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.3350390970645045,
+      "train_acc": 0.9033229491173417,
+      "val_loss": 0.5418474266266742,
+      "val_acc": 0.8288899660688318
     }
   ]
 }

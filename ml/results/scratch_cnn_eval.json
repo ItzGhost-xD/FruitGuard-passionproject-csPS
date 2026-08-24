@@ -1,61 +1,248 @@
 {
-  "model_name": "scratch_cnn",
   "checkpoint": "ml\\checkpoints\\scratch_cnn_best.pt",
+  "model_name": "scratch_cnn",
+  "val_acc_at_save": 0.8288899660688318,
   "split": {
-    "n_total": 140,
-    "n_train": 112,
-    "n_val": 14,
-    "n_test": 14,
-    "class_counts": {
-      "Apple___Apple_scab": 10,
-      "Apple___Black_rot": 10,
-      "Apple___Cedar_apple_rust": 10,
-      "Apple___healthy": 10,
-      "Grape___Black_rot": 10,
-      "Grape___Esca_Black_Measles": 10,
-      "Grape___Leaf_blight": 10,
-      "Grape___healthy": 10,
-      "Peach___Bacterial_spot": 10,
-      "Peach___healthy": 10,
-      "Tomato___Early_blight": 10,
-      "Tomato___Late_blight": 10,
-      "Tomato___Leaf_Mold": 10,
-      "Tomato___healthy": 10
-    }
+    "n_total": 13755,
+    "n_train": 9630,
+    "n_val": 2063,
+    "n_test": 2062,
+    "split_method": "leaf-group-aware manifest",
+    "seed": 42
   },
   "held_out_test": {
-    "accuracy": 0.07142857142857142,
-    "n_images": 14,
-    "per_class_accuracy": {
-      "Apple___Apple_scab": 0.0,
-      "Apple___Black_rot": 0.0,
-      "Apple___Cedar_apple_rust": 0.0,
-      "Apple___healthy": 0.0,
-      "Grape___Black_rot": 0.0,
-      "Grape___Esca_Black_Measles": 0.0,
-      "Grape___Leaf_blight": 0.0,
-      "Grape___healthy": 1.0,
-      "Peach___Bacterial_spot": 0.0,
-      "Peach___healthy": 0.0,
-      "Tomato___Early_blight": 0.0,
-      "Tomato___Late_blight": 0.0,
-      "Tomato___Leaf_Mold": 0.0,
-      "Tomato___healthy": 0.0
+    "accuracy": 0.8205625606207565,
+    "macro_precision": 0.8537453540266172,
+    "macro_recall": 0.8040976448453611,
+    "macro_f1": 0.8048413150666931,
+    "per_class": {
+      "Apple___Apple_scab": {
+        "precision": 1.0,
+        "recall": 0.9042553191489362,
+        "f1": 0.9497206703910615,
+        "support": 94
+      },
+      "Apple___Black_rot": {
+        "precision": 1.0,
+        "recall": 0.5591397849462365,
+        "f1": 0.7172413793103448,
+        "support": 93
+      },
+      "Apple___Cedar_apple_rust": {
+        "precision": 0.4482758620689655,
+        "recall": 0.9512195121951219,
+        "f1": 0.609375,
+        "support": 41
+      },
+      "Apple___healthy": {
+        "precision": 0.9707112970711297,
+        "recall": 0.943089430894309,
+        "f1": 0.9567010309278351,
+        "support": 246
+      },
+      "Grape___Black_rot": {
+        "precision": 0.8484848484848485,
+        "recall": 0.632768361581921,
+        "f1": 0.7249190938511327,
+        "support": 177
+      },
+      "Grape___Esca_Black_Measles": {
+        "precision": 1.0,
+        "recall": 0.8317307692307693,
+        "f1": 0.9081364829396326,
+        "support": 208
+      },
+      "Grape___Leaf_blight": {
+        "precision": 0.974025974025974,
+        "recall": 0.9375,
+        "f1": 0.9554140127388535,
+        "support": 160
+      },
+      "Grape___healthy": {
+        "precision": 1.0,
+        "recall": 0.6984126984126984,
+        "f1": 0.822429906542056,
+        "support": 63
+      },
+      "Peach___Bacterial_spot": {
+        "precision": 0.7966903073286052,
+        "recall": 0.9768115942028985,
+        "f1": 0.8776041666666666,
+        "support": 345
+      },
+      "Peach___healthy": {
+        "precision": 1.0,
+        "recall": 0.9259259259259259,
+        "f1": 0.9615384615384616,
+        "support": 54
+      },
+      "Tomato___Early_blight": {
+        "precision": 0.753968253968254,
+        "recall": 0.6333333333333333,
+        "f1": 0.6884057971014492,
+        "support": 150
+      },
+      "Tomato___Late_blight": {
+        "precision": 0.5570175438596491,
+        "recall": 0.9202898550724637,
+        "f1": 0.6939890710382514,
+        "support": 138
+      },
+      "Tomato___Leaf_Mold": {
+        "precision": 0.6032608695652174,
+        "recall": 0.7762237762237763,
+        "f1": 0.6788990825688074,
+        "support": 143
+      },
+      "Tomato___healthy": {
+        "precision": 1.0,
+        "recall": 0.5666666666666667,
+        "f1": 0.723404255319149,
+        "support": 150
+      }
     },
     "confusion_matrix": [
       [
+        85,
         0,
         0,
         0,
         0,
         0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        6,
+        0,
+        0
+      ],
+      [
+        0,
+        52,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        35,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        39,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        232,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0,
+        0,
+        6,
+        2,
+        0
+      ],
+      [
+        0,
+        0,
+        26,
+        0,
+        112,
+        0,
+        0,
+        0,
+        26,
+        0,
+        13,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        2,
+        0,
+        20,
+        173,
+        4,
+        0,
+        3,
+        0,
+        5,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        4,
+        0,
+        0,
+        0,
+        150,
+        0,
+        5,
         0,
         0,
         1,
         0,
+        0
+      ],
+      [
+        0,
+        0,
+        9,
+        1,
         0,
         0,
         0,
+        44,
+        1,
+        0,
+        0,
+        8,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        337,
+        0,
+        0,
+        6,
         0,
         0
       ],
@@ -67,12 +254,44 @@
         0,
         0,
         0,
+        0,
+        4,
+        50,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        4,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        95,
+        34,
+        14,
+        0
+      ],
+      [
+        0,
+        0,
         1,
         0,
         0,
         0,
         0,
         0,
+        0,
+        0,
+        5,
+        127,
+        5,
         0
       ],
       [
@@ -83,12 +302,12 @@
         0,
         0,
         0,
-        1,
         0,
         0,
         0,
         0,
-        0,
+        32,
+        111,
         0
       ],
       [
@@ -99,177 +318,135 @@
         0,
         0,
         0,
-        1,
         0,
         0,
         0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
-      ],
-      [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0
+        8,
+        5,
+        52,
+        85
       ]
     ],
-    "macro_f1": 0.07142857142857142,
-    "macro_precision": 0.07142857142857142,
-    "macro_recall": 0.07142857142857142
-  }
+    "sklearn_report": {
+      "Apple___Apple_scab": {
+        "precision": 1.0,
+        "recall": 0.9042553191489362,
+        "f1-score": 0.9497206703910615,
+        "support": 94.0
+      },
+      "Apple___Black_rot": {
+        "precision": 1.0,
+        "recall": 0.5591397849462365,
+        "f1-score": 0.7172413793103448,
+        "support": 93.0
+      },
+      "Apple___Cedar_apple_rust": {
+        "precision": 0.4482758620689655,
+        "recall": 0.9512195121951219,
+        "f1-score": 0.609375,
+        "support": 41.0
+      },
+      "Apple___healthy": {
+        "precision": 0.9707112970711297,
+        "recall": 0.943089430894309,
+        "f1-score": 0.9567010309278351,
+        "support": 246.0
+      },
+      "Grape___Black_rot": {
+        "precision": 0.8484848484848485,
+        "recall": 0.632768361581921,
+        "f1-score": 0.7249190938511327,
+        "support": 177.0
+      },
+      "Grape___Esca_Black_Measles": {
+        "precision": 1.0,
+        "recall": 0.8317307692307693,
+        "f1-score": 0.9081364829396326,
+        "support": 208.0
+      },
+      "Grape___Leaf_blight": {
+        "precision": 0.974025974025974,
+        "recall": 0.9375,
+        "f1-score": 0.9554140127388535,
+        "support": 160.0
+      },
+      "Grape___healthy": {
+        "precision": 1.0,
+        "recall": 0.6984126984126984,
+        "f1-score": 0.822429906542056,
+        "support": 63.0
+      },
+      "Peach___Bacterial_spot": {
+        "precision": 0.7966903073286052,
+        "recall": 0.9768115942028985,
+        "f1-score": 0.8776041666666666,
+        "support": 345.0
+      },
+      "Peach___healthy": {
+        "precision": 1.0,
+        "recall": 0.9259259259259259,
+        "f1-score": 0.9615384615384616,
+        "support": 54.0
+      },
+      "Tomato___Early_blight": {
+        "precision": 0.753968253968254,
+        "recall": 0.6333333333333333,
+        "f1-score": 0.6884057971014492,
+        "support": 150.0
+      },
+      "Tomato___Late_blight": {
+        "precision": 0.5570175438596491,
+        "recall": 0.9202898550724637,
+        "f1-score": 0.6939890710382514,
+        "support": 138.0
+      },
+      "Tomato___Leaf_Mold": {
+        "precision": 0.6032608695652174,
+        "recall": 0.7762237762237763,
+        "f1-score": 0.6788990825688074,
+        "support": 143.0
+      },
+      "Tomato___healthy": {
+        "precision": 1.0,
+        "recall": 0.5666666666666667,
+        "f1-score": 0.723404255319149,
+        "support": 150.0
+      },
+      "accuracy": 0.8205625606207565,
+      "macro avg": {
+        "precision": 0.8537453540266172,
+        "recall": 0.8040976448453611,
+        "f1-score": 0.8048413150666931,
+        "support": 2062.0
+      },
+      "weighted avg": {
+        "precision": 0.8614395649730185,
+        "recall": 0.8205625606207565,
+        "f1-score": 0.8232364195010253,
+        "support": 2062.0
+      }
+    }
+  },
+  "ood_real": null,
+  "class_ids": [
+    "Apple___Apple_scab",
+    "Apple___Black_rot",
+    "Apple___Cedar_apple_rust",
+    "Apple___healthy",
+    "Grape___Black_rot",
+    "Grape___Esca_Black_Measles",
+    "Grape___Leaf_blight",
+    "Grape___healthy",
+    "Peach___Bacterial_spot",
+    "Peach___healthy",
+    "Tomato___Early_blight",
+    "Tomato___Late_blight",
+    "Tomato___Leaf_Mold",
+    "Tomato___healthy"
+  ],
+  "limitations": [
+    "PlantVillage images are relatively clean compared with orchard phone photos.",
+    "Similar foliar symptoms can confuse classes (e.g. early vs late blight).",
+    "Predictions are identification hypotheses, not agronomic prescriptions."
+  ]
 }

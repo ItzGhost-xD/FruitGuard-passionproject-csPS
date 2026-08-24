@@ -61,16 +61,17 @@ def load_checkpoint(path: Path, device):
     return model, ckpt
 
 
-def evaluate_ood(model, device, labels: list[str]) -> dict | None:
-    if not OOD_DIR.exists():
+def evaluate_ood(model, device, labels: list[str], ood_dir: Path) -> dict | None:
+    if not ood_dir.exists():
         return None
+
     try:
-        ds = MappedImageFolder(OOD_DIR, transform=eval_transforms())
+        ds = MappedImageFolder(ood_dir, transform=eval_transforms())
     except Exception:
         return None
     if len(ds) == 0:
         return None
-    loader = DataLoader(ds, batch_size=16, shuffle=False)
+    loader = DataLoader(ds, batch_size=64, shuffle=False)
     y_true, y_pred = predict(model, loader, device)
     block = metrics_block(y_true, y_pred, labels)
     block["n_images"] = int(len(ds))
@@ -85,6 +86,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluate a FruitGuard checkpoint.")
     parser.add_argument("--checkpoint", type=Path, default=None)
     parser.add_argument("--data", type=Path, default=RAW_DIR)
+    parser.add_argument("--ood", type=Path, default=OOD_DIR)
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -97,7 +99,7 @@ def main() -> None:
 
     model, ckpt = load_checkpoint(ckpt_path, device)
     labels = ckpt.get("class_ids", class_ids())
-    _, _, test_loader, split_info, _, _ = make_loaders(args.data)
+    _, _, test_loader, split_info, _, _ = make_loaders(args.data, batch_size=64)
     y_true, y_pred = predict(model, test_loader, device)
 
     payload = {
@@ -106,7 +108,7 @@ def main() -> None:
         "val_acc_at_save": ckpt.get("val_acc"),
         "split": split_info,
         "held_out_test": metrics_block(y_true, y_pred, labels),
-        "ood_phone": evaluate_ood(model, device, labels),
+        "ood_real": evaluate_ood(model, device, labels, args.ood),
         "class_ids": labels,
         "limitations": [
             "PlantVillage images are relatively clean compared with orchard phone photos.",

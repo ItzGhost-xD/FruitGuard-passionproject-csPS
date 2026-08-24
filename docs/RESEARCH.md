@@ -354,3 +354,78 @@ Possible extensions include:
 * additional disease categories
 * improved domain adaptation
 * mobile-device deployment
+
+## Experiment Log
+
+### 2026-08-24 — Controlled PlantVillage evaluation
+
+A leakage-aware research split was created from the official PlantVillage dataset.
+
+Final split:
+- Training: 9,630 images
+- Validation: 2,063 images
+- Test: 2,062 images
+- Total: 13,755 images
+- Classes: 14
+
+Where official leaf-group metadata was available, images from the same physical leaf were kept in the same split to reduce leakage.
+
+One exception was `Grape___healthy`, for which leaf-group metadata was unavailable. This class was split reproducibly at image level using seed 42.
+
+Four metadata entries for `Grape___Leaf_blight_(Isariopsis_Leaf_Spot)` could not be matched to files and were excluded.
+
+### MobileNetV3-Small
+
+Training:
+- Epochs: 15
+- Best validation accuracy: 1.000
+- Best checkpoint: `ml/checkpoints/mobilenet_v3_best.pt`
+
+Held-out PlantVillage test accuracy:
+- 1.000
+
+Interpretation:
+MobileNetV3 achieved perfect accuracy on the controlled PlantVillage test set. This result should not be interpreted as proof of real-world reliability because PlantVillage images are relatively clean and standardized.
+
+### Scratch CNN
+
+Training:
+- Epochs: 8
+- Best validation accuracy: 0.829
+- Final training accuracy: 0.903
+
+Held-out PlantVillage test accuracy:
+- 0.8206
+
+Interpretation:
+The pretrained MobileNetV3 substantially outperformed the CNN trained from scratch on the same controlled dataset, suggesting that transfer learning provided a major advantage.
+
+### Current controlled-data comparison
+
+| Model | Validation Accuracy | Test Accuracy |
+|---|---:|---:|
+| MobileNetV3-Small | 1.000 | 1.000 |
+| Scratch CNN | 0.829 | 0.821 |
+
+### Next experiment — real-world OOD evaluation
+
+The next stage will evaluate both models on real-world images that differ from PlantVillage in:
+- lighting
+- background
+- framing
+- camera quality
+- orientation
+- occlusion
+
+The goal is to measure the generalization gap between controlled laboratory-style images and realistic user-submitted images.
+
+### 2026-08-24 — OOD evaluation setup
+
+The OOD evaluation pipeline was added and tested with both trained models.
+
+The first attempt returned no OOD metrics because the real-world OOD dataset had not yet been populated with usable images. No OOD result was recorded from this attempt.
+
+Next step:
+Collect genuine real-world images for the 14 target classes and rerun the same checkpoints without retraining.
+
+python -c "import json; d=json.load(open('ml/results/mobilenet_v3_eval.json')); print(json.dumps(d.get('ood_real'), indent=2))"

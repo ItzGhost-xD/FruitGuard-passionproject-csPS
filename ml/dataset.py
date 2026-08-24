@@ -12,7 +12,7 @@ from ml.config import BATCH_SIZE, IMAGE_SIZE, NUM_WORKERS, SEED, TEST_FRACTION, 
 from ml.taxonomy import class_ids, folder_to_id
 import csv
 from PIL import Image
-
+from ml.taxonomy import class_ids, folder_to_id
 
 def train_transforms() -> transforms.Compose:
     return transforms.Compose(
@@ -41,10 +41,13 @@ class ManifestDataset(Dataset):
     def __init__(self, rows, transform):
         self.rows = rows
         self.transform = transform
+
         self.ids = class_ids()
-        self.class_to_idx = {
+        self.id_to_idx = {
             class_id: i for i, class_id in enumerate(self.ids)
         }
+
+        self.folder_to_id_map = folder_to_id()
 
     def __len__(self):
         return len(self.rows)
@@ -57,7 +60,11 @@ class ManifestDataset(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        label = self.class_to_idx[row["class_name"]]
+        folder_name = row["class_name"]
+
+        class_id = self.folder_to_id_map[folder_name]
+
+        label = self.id_to_idx[class_id]
 
         return image, label
     
