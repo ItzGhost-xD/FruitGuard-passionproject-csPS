@@ -2,9 +2,11 @@
 
 **Computer vision for plant disease identification — and a research project about what happens when high model accuracy meets the real world.**
 
-[**Live App:**](https://fruitguard-zeta.vercel.app)
-[**Live API:**](ttps://fruitguard-api.onrender.com) 
-[**Repository:**](ps://github.com/ItzGhost-xD/FruitGuard-passionproject-csPS)
+[**Live App**](https://fruitguard-zeta.vercel.app)
+
+[**Live API**](ttps://fruitguard-api.onrender.com) 
+
+[**Repository**](ps://github.com/ItzGhost-xD/FruitGuard-passionproject-csPS)
 
 ---
 
