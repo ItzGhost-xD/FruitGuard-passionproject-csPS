@@ -4,9 +4,9 @@
 
 [**Live App**](https://fruitguard-zeta.vercel.app)
 
-[**Live API**](ttps://fruitguard-api.onrender.com) 
+[**Live API**](https://fruitguard-api.onrender.com)
 
-[**Repository**](ps://github.com/ItzGhost-xD/FruitGuard-passionproject-csPS)
+[**Repository**](https://github.com/ItzGhost-xD/FruitGuard-passionproject-csPS)
 
 ---
 
