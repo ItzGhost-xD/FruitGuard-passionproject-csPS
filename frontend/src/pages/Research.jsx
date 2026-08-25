@@ -59,7 +59,7 @@ export default function Research() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    fetch("/api/research")
+    fetch("https://fruitguard-api.onrender.com/api/research")
       .then((r) => r.json())
       .then(setData)
       .catch(() => setData({ error: true }));
@@ -70,7 +70,7 @@ export default function Research() {
     return (
       <main>
         <h1>Research</h1>
-        <p>Start the API on port 8000 to load experiment files from the backend.</p>
+        <p>Could not load the research data from the FruitGuard API. Please try again shortly.</p>
       </main>
     );
   }
@@ -101,10 +101,10 @@ export default function Research() {
               acc {((block.accuracy || 0) * 100).toFixed(1)}% · macro-F1{" "}
               {((block.macro_f1 || 0) * 100).toFixed(1)}%
             </p>
-            {ev.ood_phone && (
+            {ev.ood_real && (
               <p>
-                Phone-photo OOD accuracy: {((ev.ood_phone.accuracy || 0) * 100).toFixed(1)}%
-                on {ev.ood_phone.n_images} images.
+                PlantDoc OOD accuracy: {((ev.ood_real.accuracy || 0) * 100).toFixed(1)}%
+                on {ev.ood_real.n_images} images.
               </p>
             )}
             <Matrix matrix={block.confusion_matrix} labels={labels} />
