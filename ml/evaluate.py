@@ -30,7 +30,7 @@ def metrics_block(y_true, y_pred, labels: list[str]) -> dict:
     precision, recall, f1, support = precision_recall_fscore_support(
         y_true, y_pred, labels=list(range(len(labels))), zero_division=0
     )
-    report = classification_report(y_true, y_pred, target_names=labels, zero_division=0, output_dict=True)
+    report = classification_report(y_true, y_pred, labels=list(range(len(labels))), target_names=labels, zero_division=0, output_dict=True)
     cm = confusion_matrix(y_true, y_pred, labels=list(range(len(labels)))).tolist()
     acc = float((y_true == y_pred).mean()) if len(y_true) else 0.0
     return {
@@ -76,8 +76,9 @@ def evaluate_ood(model, device, labels: list[str], ood_dir: Path) -> dict | None
     block = metrics_block(y_true, y_pred, labels)
     block["n_images"] = int(len(ds))
     block["note"] = (
-        "Out-of-distribution phone photos. High lab accuracy with low OOD accuracy "
-        "is a core negative result for this research question."
+        "External real-world PlantDoc images. The gap between controlled "
+        "PlantVillage performance and OOD performance is a central result "
+        "of this research."
     )
     return block
 

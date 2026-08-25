@@ -429,3 +429,67 @@ Next step:
 Collect genuine real-world images for the 14 target classes and rerun the same checkpoints without retraining.
 
 python -c "import json; d=json.load(open('ml/results/mobilenet_v3_eval.json')); print(json.dumps(d.get('ood_real'), indent=2))"
+
+### 2026-08-24 — Real-world OOD dataset created
+
+A partial real-world out-of-distribution dataset was created using PlantDoc.
+
+- Total OOD images: 95
+- Source: PlantDoc
+- Purpose: evaluate generalization from controlled PlantVillage images to more realistic field/internet-style images
+
+Only classes with direct semantic correspondence between PlantDoc and FruitGuard were included.
+
+Included OOD-compatible classes:
+- Apple___Apple_scab
+- Apple___Cedar_apple_rust
+- Apple___healthy
+- Grape___Black_rot
+- Grape___healthy
+- Peach___healthy
+- Tomato___Early_blight
+- Tomato___Late_blight
+- Tomato___Leaf_Mold
+- Tomato___healthy
+
+Classes without sufficiently reliable direct PlantDoc equivalents were not force-mapped:
+- Apple___Black_rot
+- Grape___Esca_(Black_Measles)
+- Grape___Leaf_blight_(Isariopsis_Leaf_Spot)
+- Peach___Bacterial_spot
+
+This OOD dataset is therefore a partial-class real-world evaluation rather than a full 14-class external benchmark.
+
+### 2026-08-25 — Real-world OOD evaluation
+
+Both trained models were evaluated on an external PlantDoc-derived dataset containing 95 real-world images from 10 compatible FruitGuard classes.
+
+| Model | PlantVillage Test Accuracy | PlantDoc OOD Accuracy | Generalization Drop |
+|---|---:|---:|---:|
+| MobileNetV3-Small | 100.00% | 18.95% | 81.05 percentage points |
+| Scratch CNN | 82.06% | 14.74% | 67.32 percentage points |
+
+#### Interpretation
+
+Both models experienced a substantial decline when evaluated on images outside the controlled PlantVillage distribution.
+
+MobileNetV3-Small achieved perfect accuracy on the held-out PlantVillage test set but only 18.95% accuracy on the PlantDoc OOD set. This represents an 81.05 percentage-point generalization gap.
+
+The scratch CNN achieved 82.06% accuracy on PlantVillage and 14.74% on PlantDoc, a 67.32 percentage-point drop.
+
+Although MobileNetV3 remained the more accurate model on both datasets, its extremely high controlled-data performance did not translate into reliable real-world performance.
+
+These findings support the hypothesis that computer-vision plant disease classifiers trained primarily on controlled PlantVillage imagery can substantially overestimate their ability to classify images collected under more realistic conditions.
+
+The result also demonstrates that strong held-out accuracy alone is insufficient evidence of real-world robustness.
+
+#### Limitations
+
+The OOD dataset contained 95 images covering 10 of the 14 FruitGuard classes because sufficiently direct PlantDoc equivalents were unavailable for four classes.
+
+The OOD dataset was relatively small and was not intended to represent every possible field condition.
+
+Differences between PlantVillage and PlantDoc may include background complexity, lighting, framing, resolution, leaf orientation, disease severity, occlusion, and image source.
+
+The experiment therefore demonstrates a domain-generalization problem but does not establish an exact expected accuracy for all real-world use cases.
+
