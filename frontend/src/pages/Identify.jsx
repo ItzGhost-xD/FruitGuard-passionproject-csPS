@@ -9,7 +9,7 @@ export default function Identify() {
   const [health, setHealth] = useState(null);
 
   useEffect(() => {
-    fetch("/api/health")
+    fetch("https://fruitguard-api.onrender.com/api/health")
       .then((r) => r.json())
       .then(setHealth)
       .catch(() => setHealth({ ok: false }));
@@ -30,7 +30,10 @@ export default function Identify() {
     const body = new FormData();
     body.append("file", file);
     try {
-      const response = await fetch("/api/predict", { method: "POST", body });
+      const response = await fetch(
+        "https://fruitguard-api.onrender.com/api/predict",
+        { method: "POST", body }
+      );
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.detail || "Prediction failed.");
       setResult(payload);
