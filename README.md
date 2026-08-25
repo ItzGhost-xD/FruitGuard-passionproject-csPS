@@ -2,9 +2,9 @@
 
 **Computer vision for plant disease identification — and a research project about what happens when high model accuracy meets the real world.**
 
-**Live App:** https://fruitguard-zeta.vercel.app  
-**Live API:** https://fruitguard-api.onrender.com  
-**Repository:** https://github.com/ItzGhost-xD/FruitGuard-passionproject-csPS
+[**Live App:**](https://fruitguard-zeta.vercel.app)
+[**Live API:**](ttps://fruitguard-api.onrender.com) 
+[**Repository:**](ps://github.com/ItzGhost-xD/FruitGuard-passionproject-csPS)
 
 ---
 
@@ -153,3 +153,224 @@ Random seed:
 
 ```text
 42
+````
+
+Where PlantVillage leaf-group metadata was available, related images were kept within the same split to reduce leakage.
+
+See [`docs/RESEARCH.md`](docs/RESEARCH.md) for the complete methodology and experiment log.
+
+---
+
+## Web Application
+
+FruitGuard includes a complete frontend and backend system.
+
+### Frontend
+
+* React
+* Vite
+* Deployed with Vercel
+
+### Backend
+
+* Python
+* FastAPI
+* PyTorch
+* Pillow
+* Deployed with Render
+
+### Machine Learning
+
+* PyTorch
+* torchvision
+* MobileNetV3-Small
+* Custom CNN
+* scikit-learn for evaluation metrics
+
+---
+
+## Live Deployment
+
+### Website
+
+[https://fruitguard-zeta.vercel.app](https://fruitguard-zeta.vercel.app)
+
+### API
+
+[https://fruitguard-api.onrender.com](https://fruitguard-api.onrender.com)
+
+### API Health Check
+
+[https://fruitguard-api.onrender.com/api/health](https://fruitguard-api.onrender.com/api/health)
+
+Expected response:
+
+```json
+{
+  "ok": true,
+  "model_available": true,
+  "model_name": "mobilenet_v3"
+}
+```
+
+---
+
+## Running FruitGuard Locally
+
+Clone the repository:
+
+```bash
+git clone https://github.com/ItzGhost-xD/FruitGuard-passionproject-csPS.git
+cd FruitGuard-passionproject-csPS
+```
+
+Create and activate a virtual environment:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+Install the backend dependencies:
+
+```powershell
+pip install -r backend\requirements.txt
+```
+
+Start the FastAPI backend:
+
+```powershell
+python -m uvicorn backend.app.main:app --reload --port 8000
+```
+
+Then open another terminal:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend will normally run at:
+
+```text
+http://localhost:5173
+```
+
+The backend will run at:
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+## Model Evaluation
+
+Evaluate MobileNetV3:
+
+```powershell
+python -m ml.evaluate --checkpoint ml/checkpoints/mobilenet_v3_best.pt --ood ml/data/ood_real
+```
+
+Evaluate the scratch CNN:
+
+```powershell
+python -m ml.evaluate --checkpoint ml/checkpoints/scratch_cnn_best.pt --ood ml/data/ood_real
+```
+
+Evaluation outputs are stored in:
+
+```text
+ml/results/
+```
+
+---
+
+## Project Structure
+
+```text
+FruitGuard/
+│
+├── backend/
+│   └── app/
+│       ├── inference.py
+│       ├── main.py
+│       └── schemas.py
+│
+├── frontend/
+│   └── src/
+│       ├── pages/
+│       │   ├── Home.jsx
+│       │   ├── Identify.jsx
+│       │   ├── Research.jsx
+│       │   └── About.jsx
+│       └── App.jsx
+│
+├── ml/
+│   ├── checkpoints/
+│   ├── data/
+│   ├── results/
+│   ├── dataset.py
+│   ├── evaluate.py
+│   ├── models.py
+│   ├── taxonomy.json
+│   ├── taxonomy.py
+│   └── train.py
+│
+├── docs/
+│   └── RESEARCH.md
+│
+├── prepare_plantdoc_ood.py
+├── prepare_research_split.py
+└── README.md
+```
+
+---
+
+## Limitations
+
+FruitGuard should not be treated as a production agricultural diagnostic system.
+
+Important limitations include:
+
+* The OOD evaluation contains only 95 images.
+* Only 10 of the 14 classes had sufficiently compatible PlantDoc counterparts.
+* PlantVillage contains relatively standardized imagery.
+* Real-world conditions can differ significantly from the training distribution.
+* High model confidence does not necessarily mean a prediction is correct.
+* Further testing on independently collected field photographs would be required before considering real-world deployment for serious agricultural decisions.
+
+The poor OOD performance is therefore not hidden as a failure of the project — it is one of the project's central research findings.
+
+---
+
+## Safety
+
+FruitGuard provides **identification hypotheses for education and research**.
+
+It does not recommend pesticides, chemicals, treatments, or agricultural interventions.
+
+Uncertain or important cases should be reviewed by a qualified agricultural professional or local agricultural extension service.
+
+---
+
+## Why FruitGuard?
+
+FruitGuard was built to explore more than just:
+
+> *“Can I train a model that gets a high accuracy score?”*
+
+The more important question became:
+
+> *“Can that accuracy actually be trusted when the environment changes?”*
+
+The answer from this experiment was clear: **not necessarily**.
+
+FruitGuard demonstrates why evaluating machine-learning systems beyond their original dataset matters, and why impressive benchmark performance should not automatically be interpreted as real-world reliability.
+
+---
+
+**Built as a computer science and machine-learning research project.**
+
+**The Developer @ FruitGuard**

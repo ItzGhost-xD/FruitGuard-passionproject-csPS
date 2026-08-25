@@ -1,495 +1,904 @@
-# FruitGuard Research Log
+# FruitGuard — Final Research Report
 
-> **Research integrity note:** Empty results are better than invented results. Placeholder experiments are clearly separated from final research results.
+> **Research integrity note:** FruitGuard reports the results that were actually obtained. Poor real-world performance is treated as a research finding rather than hidden or replaced with more favorable results.
 
-## Research Question
+---
 
-**Primary question**
+## Developer's Note
 
-How accurately do computer-vision models trained on controlled PlantVillage images identify common crop leaf diseases when evaluated on real-world images with varying lighting, backgrounds, framing, and image quality?
+FruitGuard started with what seemed like a straightforward idea: build a computer-vision model capable of identifying diseases from images of plant leaves.
 
-**Secondary question**
+But while working on the project, a more interesting question appeared.
 
-How large is the generalization gap between performance on controlled PlantVillage images and performance on real-world out-of-distribution (OOD) images?
+A machine-learning model can achieve an impressive accuracy score on a test dataset, but what happens when the images stop looking like the dataset?
 
-## Hypothesis
+I did not want FruitGuard to become another project where a model reaches a high percentage, the number gets displayed in a README, and the project is considered finished.
 
-Transfer-learning models are expected to perform strongly on held-out PlantVillage images but experience a measurable reduction in accuracy and macro-F1 when evaluated on natural-scene images.
+I wanted to know whether that number could actually be trusted.
 
-It is also expected that pretrained convolutional neural networks will generalize better than a scratch CNN and traditional HSV-histogram baseline.
+That became the real purpose of FruitGuard.
 
-## Scope
+The project compares computer-vision models trained on the controlled PlantVillage dataset and then evaluates the same frozen models on external PlantDoc images containing more realistic backgrounds, lighting, framing, orientations, and image conditions.
 
-| Crop   | Conditions                                            |
-| ------ | ----------------------------------------------------- |
-| Apple  | scab, black rot, cedar apple rust, healthy            |
-| Grape  | black rot, esca (black measles), leaf blight, healthy |
-| Peach  | bacterial spot, healthy                               |
-| Tomato | early blight, late blight, leaf mold, healthy         |
+The difference was substantial.
+
+The strongest model achieved 100% accuracy on the controlled PlantVillage test set, but only approximately 19% accuracy on the real-world OOD evaluation.
+
+Instead of treating that result as a failure, I consider it the most important part of the project.
+
+FruitGuard taught me that developing machine learning systems is not only about making models perform well. It is also about understanding where they fail, why they fail, and whether the environment used to evaluate them reflects the environment in which they might actually be used.
+
+This project therefore became less about creating the "best plant disease classifier" and more about investigating the gap between benchmark accuracy and real-world reliability.
+
+**Yours truly,**  
+**The Developer @ FruitGuard**
+
+---
+
+# 1. Research Question
+
+## Primary Research Question
+
+**How accurately do computer-vision models trained on controlled PlantVillage images identify common crop leaf diseases when evaluated on real-world images with varying lighting, backgrounds, framing, and image quality?**
+
+## Secondary Research Question
+
+**How large is the generalization gap between performance on controlled PlantVillage images and performance on external real-world out-of-distribution images?**
+
+---
+
+# 2. Hypothesis
+
+The project hypothesized that:
+
+1. Transfer-learning models would perform strongly on held-out PlantVillage images.
+2. A pretrained MobileNetV3 model would outperform a CNN trained from scratch.
+3. Both models would experience a substantial decline when evaluated on images outside the PlantVillage distribution.
+4. High controlled-domain accuracy would not necessarily indicate strong real-world reliability.
+
+---
+
+# 3. Project Scope
+
+FruitGuard contains **14 classes across four crops**.
+
+| Crop | Classes |
+|---|---|
+| Apple | Apple Scab, Black Rot, Cedar Apple Rust, Healthy |
+| Grape | Black Rot, Esca / Black Measles, Leaf Blight, Healthy |
+| Peach | Bacterial Spot, Healthy |
+| Tomato | Early Blight, Late Blight, Leaf Mold, Healthy |
 
 **Total classes: 14**
 
-The project focuses on leaf-disease classification. Pest identification is currently outside the defined scope.
+The final research scope focuses on **leaf-disease classification**.
 
-## Dataset
+Pest identification was excluded from the final experiment.
 
-### Primary Training Dataset — PlantVillage
+---
 
-PlantVillage will be used as the controlled-domain training and evaluation dataset.
+# 4. Datasets
 
-Record before final experiments:
+## 4.1 PlantVillage
 
-* Dataset source:
-* Exact dataset version:
-* Source URL:
-* License:
-* Download date:
-* Total downloaded images:
-* Total images retained after class filtering:
-* Excluded/corrupted images:
-* Dataset checksum/version identifier, if available:
+The official PlantVillage dataset was used as the controlled training and in-distribution evaluation dataset.
 
-Only the fourteen classes defined in the project scope will be retained.
+Source:
 
-### Dataset Splitting
+https://github.com/spMohanty/PlantVillage-Dataset
 
-Target split:
+Only the fourteen FruitGuard classes were retained.
 
-* Training: 70%
-* Validation: 15%
-* Test: 15%
-* Random seed: 42
+The final research dataset contained:
 
-The split must be stratified by class.
+| Split | Images |
+|---|---:|
+| Training | 9,630 |
+| Validation | 2,063 |
+| Test | 2,062 |
+| **Total** | **13,755** |
 
-Where leaf-group metadata is available, images originating from the same leaf should remain within the same split to reduce the risk of data leakage.
+Random seed:
 
-The final split counts will be recorded after the real dataset is prepared.
+```text
+42
+````
 
-| Split      | Images | Percentage |
-| ---------- | -----: | ---------: |
-| Train      |    TBD |        70% |
-| Validation |    TBD |        15% |
-| Test       |    TBD |        15% |
+The approximate intended split was:
 
-### Training Augmentation
+* 70% training
+* 15% validation
+* 15% test
 
-Augmentation is applied **only to training images**.
+---
 
-Planned transformations:
+## 4.2 Leakage-Aware Splitting
 
-* resized/random crop
-* horizontal flip
+A normal random image-level split can accidentally place photographs of the same physical leaf into both training and testing sets.
+
+This could artificially increase evaluation performance.
+
+Where PlantVillage leaf-group metadata was available, images originating from the same physical leaf were therefore kept within the same split.
+
+### Exception — Grape Healthy
+
+Leaf-group metadata was unavailable for:
+
+```text
+Grape___healthy
+```
+
+That class was split reproducibly at image level using seed 42.
+
+This limitation is documented because related-image leakage cannot be ruled out for that class.
+
+---
+
+## 4.3 Metadata Exclusions
+
+Four PlantVillage metadata entries belonging to:
+
+```text
+Grape___Leaf_blight_(Isariopsis_Leaf_Spot)
+```
+
+could not be matched to corresponding image files.
+
+These four entries were excluded.
+
+No replacement or invented images were added.
+
+---
+
+# 5. Training Data Augmentation
+
+Random augmentation was applied **only to training images**.
+
+Training transformations included:
+
+* resizing
+* random cropping
+* horizontal flipping
 * small rotations
-* moderate brightness/contrast/color jitter
+* brightness adjustment
+* contrast adjustment
+* saturation adjustment
+* minor hue variation
 
-Validation and test images will not receive random augmentation.
+Validation and test images used deterministic resizing and normalization without random augmentation.
 
-## Out-of-Distribution Evaluation
+---
 
-The main research question requires testing beyond the controlled PlantVillage distribution.
+# 6. Models
 
-### OOD-A — Natural-Scene Public Dataset
+The final experimental comparison focused on two neural-network approaches.
 
-A compatible subset of a natural-scene plant-disease dataset such as PlantDoc will be used where labels can be reliably mapped to FruitGuard's fourteen classes.
+## 6.1 MobileNetV3-Small
 
-The model will **not be retrained on the OOD evaluation images** before this evaluation.
+MobileNetV3-Small was selected as the transfer-learning model.
 
-Record:
+Reasons included:
 
-* dataset/version:
-* license:
-* matching classes:
-* images retained:
-* excluded classes:
-* label-mapping decisions:
+* pretrained ImageNet features
+* relatively small checkpoint size
+* efficient inference
+* suitability for web deployment
+* strong expected performance compared with training a network from scratch
 
-### OOD-B — FruitGuard Phone-Photo Set
+The final trained checkpoint is:
 
-A small independent collection of phone photographs will be used as an additional real-world demonstration set.
+```text
+ml/checkpoints/mobilenet_v3_best.pt
+```
 
-These photographs may include:
+---
 
-* indoor and outdoor lighting
-* shadows/backlighting
-* plain and cluttered backgrounds
-* different distances
-* partial leaves
-* multiple leaves
-* mild blur
-* varying camera angles
+## 6.2 Scratch CNN
 
-Metadata should be recorded where possible.
+A custom convolutional neural network was trained without pretrained ImageNet features.
 
-Suggested metadata fields:
+Its purpose was to provide a direct comparison showing how well a neural network trained solely from the FruitGuard training images performed relative to transfer learning.
 
-`filename, true_class, lighting, background, blur, framing, device, notes`
+The final checkpoint is:
 
-Incomplete class coverage will be reported honestly. The phone-photo dataset will not be presented as a balanced benchmark unless adequate samples exist for every class.
+```text
+ml/checkpoints/scratch_cnn_best.pt
+```
 
-## Models
+---
 
-| Approach                   | Reason for Comparison                                       |
-| -------------------------- | ----------------------------------------------------------- |
-| HSV histogram + linear SVM | Traditional computer-vision baseline                        |
-| Scratch CNN                | Measures performance without pretrained ImageNet features   |
-| MobileNetV3-Small          | Lightweight transfer-learning model suitable for deployment |
-| EfficientNet-B0            | Efficient higher-capacity transfer-learning comparison      |
-| ResNet-18                  | Standard residual-network baseline                          |
+# 7. Controlled-Domain Training Results
 
-## Experimental Controls
+## MobileNetV3-Small
 
-To ensure fair comparison:
+Training epochs:
 
-* Models use the same fourteen target classes.
-* Neural models use the same train/validation/test partitions.
-* The same test images are used for every model.
-* Random seed is recorded.
-* Test images are never used during training or hyperparameter selection.
-* OOD images are kept separate from model training during the primary experiment.
-* Neural-model input size is standardized where practical.
-* Training settings and deviations are recorded.
+```text
+15
+```
 
-## Training Strategy
+Best validation accuracy:
 
-For pretrained neural networks:
+```text
+1.000
+```
 
-1. Initialize with pretrained ImageNet weights.
-2. Replace the final classification layer with a fourteen-class head.
-3. Train the classifier head while the feature extractor is initially frozen.
-4. Fine-tune pretrained layers using a lower learning rate.
-5. Monitor validation loss and macro-F1.
-6. Use early stopping to reduce unnecessary training and overfitting.
-7. Save the checkpoint with the best validation performance.
+Held-out PlantVillage test accuracy:
 
-Training settings to record:
+```text
+1.000
+```
 
-| Setting                   | Value |
-| ------------------------- | ----- |
-| Random seed               | 42    |
-| Input resolution          | TBD   |
-| Batch size                | TBD   |
-| Optimizer                 | TBD   |
-| Initial learning rate     | TBD   |
-| Fine-tuning learning rate | TBD   |
-| Maximum epochs            | TBD   |
-| Early-stopping patience   | TBD   |
-| Loss function             | TBD   |
-| Class weighting           | TBD   |
+Therefore:
 
-## Evaluation Metrics
+**PlantVillage Test Accuracy: 100.00%**
 
-### Classification Performance
+---
 
-Report:
+## Scratch CNN
 
-* Accuracy
-* Per-class precision
-* Per-class recall
-* Per-class F1
-* Macro-F1
-* Confusion matrix
+Training epochs:
 
-Because the dataset is class-imbalanced, macro-F1 will be considered alongside overall accuracy.
+```text
+8
+```
 
-### Cross-Domain Performance
+Best validation accuracy:
 
-For each model report:
+```text
+0.829
+```
 
-* PlantVillage test accuracy
-* PlantVillage macro-F1
-* OOD accuracy
-* OOD macro-F1
-* Generalization gap
+Final training accuracy:
 
-**Generalization gap:**
+```text
+0.903
+```
 
-`PlantVillage accuracy - OOD accuracy`
+Held-out PlantVillage test accuracy:
 
-A larger gap indicates poorer transfer from controlled images to natural-scene images.
+```text
+0.8205625606207565
+```
 
-### Deployment Metrics
+Therefore:
 
-Where practical also record:
+**PlantVillage Test Accuracy: 82.06%**
 
-* model parameter count
-* checkpoint/file size
-* average inference time
+---
 
-This allows the final deployed model to be selected using both predictive performance and practical efficiency.
+# 8. Controlled-Domain Comparison
 
-## Results
+| Model                 | Validation Accuracy | PlantVillage Test Accuracy |
+| --------------------- | ------------------: | -------------------------: |
+| **MobileNetV3-Small** |         **100.00%** |                **100.00%** |
+| **Scratch CNN**       |          **82.90%** |                 **82.06%** |
 
-### Controlled-Domain Results
+MobileNetV3-Small substantially outperformed the CNN trained from scratch.
 
-| Model             | Test Accuracy | Macro-F1 | Parameters | Model Size | Inference Time |
-| ----------------- | ------------: | -------: | ---------: | ---------: | -------------: |
-| HSV + SVM         |           TBD |      TBD |        N/A |        TBD |            TBD |
-| Scratch CNN       |           TBD |      TBD |        TBD |        TBD |            TBD |
-| MobileNetV3-Small |           TBD |      TBD |        TBD |        TBD |            TBD |
-| EfficientNet-B0   |           TBD |      TBD |        TBD |        TBD |            TBD |
-| ResNet-18         |           TBD |      TBD |        TBD |        TBD |            TBD |
+This suggests that pretrained visual features provided a major advantage when learning the fourteen FruitGuard classes.
 
-### Cross-Domain Results
+However, this was only the first half of the experiment.
 
-| Model             | PlantVillage Accuracy | OOD Accuracy | Accuracy Gap | PlantVillage Macro-F1 | OOD Macro-F1 |
-| ----------------- | --------------------: | -----------: | -----------: | --------------------: | -----------: |
-| HSV + SVM         |                   TBD |          TBD |          TBD |                   TBD |          TBD |
-| Scratch CNN       |                   TBD |          TBD |          TBD |                   TBD |          TBD |
-| MobileNetV3-Small |                   TBD |          TBD |          TBD |                   TBD |          TBD |
-| EfficientNet-B0   |                   TBD |          TBD |          TBD |                   TBD |          TBD |
-| ResNet-18         |                   TBD |          TBD |          TBD |                   TBD |          TBD |
+---
 
-## Failure Analysis
+# 9. Out-of-Distribution Evaluation
 
-Incorrect predictions will be reviewed rather than reporting metrics alone.
+The primary research question required evaluating the trained models on images outside the PlantVillage distribution.
 
-### Disease Ambiguity
+For this purpose, an external dataset was created using images from **PlantDoc**.
 
-* visually similar diseases
-* early vs late blight
-* overlapping symptom patterns
+Source:
 
-### Domain Shift
+[https://github.com/pratikkayal/PlantDoc-Dataset](https://github.com/pratikkayal/PlantDoc-Dataset)
 
-* cluttered backgrounds
-* different lighting
-* shadows/backlighting
-* unusual camera angles
-* leaf occupying only part of the image
+PlantDoc contains less standardized plant-disease imagery with environmental differences that may include:
 
-### Image Quality
+* natural backgrounds
+* clutter
+* variable lighting
+* different framing
+* different resolutions
+* different leaf orientations
+* occlusion
+* varying disease severity
+* different image sources
 
-* blur
-* compression
-* low resolution
-* poor focus
+PlantDoc images were **never used for FruitGuard training**.
 
-### Biological Ambiguity
+---
 
-* mixed symptoms
-* nutritional deficiencies
-* damaged leaves
-* different disease severity
+# 10. PlantDoc OOD Dataset
 
-### Confidence Errors
+The final PlantDoc OOD dataset contained:
 
-Special attention will be given to **high-confidence incorrect predictions**, since these represent an important reliability problem for a user-facing classifier.
+```text
+95 images
+```
 
-Example failure-case fields:
+Only classes with sufficiently compatible mappings between PlantDoc and FruitGuard were included.
 
-| Image | True Class | Predicted Class | Confidence | Environment | Notes |
-| ----- | ---------- | --------------- | ---------: | ----------- | ----- |
-| TBD   | TBD        | TBD             |        TBD | TBD         | TBD   |
+## Included Classes
 
-## Current Status — Pipeline Validation
+* Apple___Apple_scab
+* Apple___Cedar_apple_rust
+* Apple___healthy
+* Grape___Black_rot
+* Grape___healthy
+* Peach___healthy
+* Tomato___Early_blight
+* Tomato___Late_blight
+* Tomato___Leaf_Mold
+* Tomato___healthy
 
-**IMPORTANT:** Current numerical results are generated using placeholder sample images and are **not research findings**.
+## Classes Without Reliable OOD Equivalents
 
-Current placeholder dataset:
+The following classes were not force-mapped:
 
-* 140 images total
-* 10 images per class
-* 14 classes
+* Apple___Black_rot
+* Grape___Esca_(Black_Measles)
+* Grape___Leaf_blight_(Isariopsis_Leaf_Spot)
+* Peach___Bacterial_spot
 
-Current placeholder split:
+The OOD experiment therefore covers **10 of the 14 FruitGuard classes**.
 
-* Training: 112 images — 8/class
-* Validation: 14 images — 1/class
-* Test: 14 images — 1/class
+This limitation is intentionally reported rather than assigning questionable labels merely to create a complete fourteen-class dataset.
 
-These images exist only to validate:
+---
 
-* dataset loading
-* training
-* checkpoint creation
-* inference
-* evaluation
-* frontend/backend integration
+# 11. OOD Results
 
-Current placeholder accuracy values must not be interpreted as evidence of FruitGuard's real-world performance.
+The same trained checkpoints used for the PlantVillage test evaluation were evaluated on the PlantDoc dataset **without retraining**.
 
-## Next Research Milestones
+| Model                 | PlantVillage Accuracy | PlantDoc OOD Accuracy |         Generalization Drop |
+| --------------------- | --------------------: | --------------------: | --------------------------: |
+| **MobileNetV3-Small** |           **100.00%** |            **18.95%** | **81.05 percentage points** |
+| **Scratch CNN**       |            **82.06%** |            **14.74%** | **67.32 percentage points** |
 
-1. Obtain and record the real PlantVillage dataset.
-2. Filter the dataset to the fourteen FruitGuard classes.
-3. Verify image counts and corrupted files.
-4. Generate leakage-aware train/validation/test splits.
-5. Freeze the final test split.
-6. Train the traditional baseline.
-7. Train the scratch CNN.
-8. Train MobileNetV3-Small.
-9. Train EfficientNet-B0.
-10. Train ResNet-18.
-11. Evaluate every model on the identical PlantVillage test set.
-12. Prepare the compatible natural-scene OOD dataset.
-13. Evaluate the frozen models on OOD data.
-14. Collect the independent FruitGuard phone-photo subset.
-15. Perform failure-case analysis.
-16. Compare predictive performance with deployment efficiency.
-17. Select the model used by the FruitGuard web application.
-18. Write the final findings and limitations.
+---
 
-## Limitations
+# 12. Generalization Gap
 
-PlantVillage images are collected under relatively controlled conditions, so high in-distribution accuracy does not guarantee equivalent performance on arbitrary phone photographs.
+The generalization gap was calculated as:
 
-The OOD datasets may be smaller and more imbalanced than the primary dataset.
+```text
+PlantVillage test accuracy - PlantDoc OOD accuracy
+```
 
-Not every real-world disease condition or severity level can be represented.
+## MobileNetV3-Small
 
-Image classification alone cannot establish a definitive agricultural diagnosis.
+```text
+100.00% - 18.95% = 81.05 percentage points
+```
 
-FruitGuard is a research and educational computer-vision project and does not provide treatment or pesticide recommendations.
+## Scratch CNN
 
-## Future Work
+```text
+82.06% - 14.74% = 67.32 percentage points
+```
 
-Possible extensions include:
+Both models therefore experienced severe performance degradation outside the controlled PlantVillage distribution.
 
+---
+
+# 13. Main Finding
+
+The most important result of the experiment is the contrast between controlled and external performance.
+
+MobileNetV3-Small achieved:
+
+```text
+100.00% controlled accuracy
+18.95% OOD accuracy
+```
+
+The scratch CNN achieved:
+
+```text
+82.06% controlled accuracy
+14.74% OOD accuracy
+```
+
+MobileNetV3 remained the stronger model on both datasets.
+
+However, its perfect PlantVillage test accuracy did **not** translate into reliable classification of external real-world images.
+
+This strongly supports the project's central hypothesis:
+
+> **High in-distribution benchmark accuracy is not sufficient evidence of real-world robustness.**
+
+---
+
+# 14. Selected Class-Level Findings
+
+MobileNetV3 performed differently across OOD classes.
+
+Examples include:
+
+### Tomato Early Blight
+
+Recall:
+
+```text
+88.89%
+```
+
+The model correctly identified a relatively large proportion of the available Tomato Early Blight OOD examples.
+
+### Grape Black Rot
+
+Recall:
+
+```text
+57.14%
+```
+
+Performance was substantially better than several other classes but remained far below the controlled-domain result.
+
+### Several Other Classes
+
+Some classes achieved zero recall on the OOD dataset.
+
+This shows that the effects of domain shift were not uniform across diseases.
+
+Certain visual features transferred better than others.
+
+---
+
+# 15. Confidence and Reliability
+
+One especially important observation from the project is that model confidence should not automatically be interpreted as correctness.
+
+A neural network can assign high probability to an incorrect prediction when presented with images outside its training distribution.
+
+For this reason, the deployed FruitGuard application:
+
+* displays ranked predictions rather than claiming a definitive diagnosis
+* displays model confidence
+* checks basic image-quality characteristics
+* warns users when predictions are uncertain
+* includes an educational-use disclaimer
+* does not recommend pesticides or treatments
+
+---
+
+# 16. Interpretation
+
+The experiment suggests that the models learned highly effective representations for the PlantVillage image distribution.
+
+However, PlantVillage images are relatively standardized compared with many photographs a real user might upload.
+
+The large performance decline on PlantDoc indicates sensitivity to domain shift.
+
+Possible contributing factors include:
+
+* background differences
+* lighting differences
+* framing
+* scale
+* leaf orientation
+* image compression
+* camera characteristics
+* disease severity
+* visual clutter
+* occlusion
+* symptom variation
+
+It is not possible from this experiment alone to determine exactly how much each factor contributes.
+
+However, the overall result clearly demonstrates that dataset distribution has a major effect on model performance.
+
+---
+
+# 17. Did the Hypothesis Hold?
+
+## Hypothesis 1
+
+> Transfer learning would perform strongly on controlled PlantVillage images.
+
+**Supported.**
+
+MobileNetV3 achieved 100% PlantVillage test accuracy.
+
+---
+
+## Hypothesis 2
+
+> MobileNetV3 would outperform a CNN trained from scratch.
+
+**Supported.**
+
+Controlled test results:
+
+```text
+MobileNetV3: 100.00%
+Scratch CNN: 82.06%
+```
+
+OOD results:
+
+```text
+MobileNetV3: 18.95%
+Scratch CNN: 14.74%
+```
+
+---
+
+## Hypothesis 3
+
+> Both models would lose accuracy on real-world OOD images.
+
+**Strongly supported.**
+
+Both models experienced large declines.
+
+---
+
+## Hypothesis 4
+
+> High controlled accuracy would not necessarily indicate real-world reliability.
+
+**Strongly supported.**
+
+The 81.05 percentage-point drop experienced by MobileNetV3 is the strongest evidence produced by the experiment.
+
+---
+
+# 18. Model Selected for Deployment
+
+MobileNetV3-Small was selected as the model used by the FruitGuard web application.
+
+Reasons:
+
+* highest controlled-domain accuracy
+* highest OOD accuracy of the two tested models
+* lightweight architecture
+* relatively small checkpoint
+* suitable inference speed
+* practical for deployment
+
+The selection does **not** imply that MobileNetV3 is sufficiently accurate for professional agricultural diagnosis.
+
+It is simply the strongest model evaluated within the project.
+
+---
+
+# 19. Web Application
+
+FruitGuard was developed into a complete web application.
+
+## Frontend
+
+Technologies:
+
+* React
+* Vite
+* JavaScript
+
+Deployment:
+
+[https://fruitguard-zeta.vercel.app](https://fruitguard-zeta.vercel.app)
+
+---
+
+## Backend
+
+Technologies:
+
+* Python
+* FastAPI
+* PyTorch
+* torchvision
+* Pillow
+
+Deployment:
+
+[https://fruitguard-api.onrender.com](https://fruitguard-api.onrender.com)
+
+Health endpoint:
+
+[https://fruitguard-api.onrender.com/api/health](https://fruitguard-api.onrender.com/api/health)
+
+The production API loads:
+
+```text
+mobilenet_v3_best.pt
+```
+
+---
+
+# 20. Prediction Pipeline
+
+A user:
+
+1. selects an image
+2. uploads it through the React frontend
+3. sends the image to the FastAPI backend
+4. the backend preprocesses the image
+5. MobileNetV3 generates logits
+6. softmax converts logits into probabilities
+7. the top three classes are returned
+8. FruitGuard displays the predictions and confidence values
+
+The response also includes:
+
+* crop
+* disease label
+* description
+* symptoms to look for
+* image-quality information
+* uncertainty status
+* safety disclaimer
+
+---
+
+# 21. Evaluation Metrics
+
+The evaluation pipeline records:
+
+* accuracy
+* precision
+* recall
+* F1
+* per-class metrics
+* confusion matrix
+* macro averages
+* weighted averages
+
+One important limitation is that the OOD dataset contains only ten supported classes.
+
+Therefore, macro metrics calculated over all fourteen FruitGuard labels include classes with zero OOD support.
+
+For this reason, the final report emphasizes:
+
+* overall OOD accuracy
+* generalization gap
+* supported per-class behavior
+
+rather than presenting the fourteen-class OOD macro-F1 as the primary finding.
+
+---
+
+# 22. Limitations
+
+FruitGuard has several important limitations.
+
+## Dataset Size
+
+The external OOD evaluation contains only:
+
+```text
+95 images
+```
+
+This is sufficient to demonstrate a substantial distribution shift but not enough to estimate universal real-world accuracy.
+
+---
+
+## Partial Class Coverage
+
+Only 10 of the 14 classes had sufficiently compatible PlantDoc classes.
+
+The external benchmark is therefore incomplete.
+
+---
+
+## PlantVillage Characteristics
+
+PlantVillage imagery is relatively clean and standardized.
+
+Even leakage-aware splitting cannot make the held-out PlantVillage test set equivalent to arbitrary field photographs.
+
+---
+
+## Grape Healthy Split
+
+`Grape___healthy` lacked leaf-group metadata and therefore required image-level splitting.
+
+Potential related-image similarity cannot be completely excluded for this class.
+
+---
+
+## Dataset-to-Dataset Differences
+
+PlantDoc is itself a specific dataset.
+
+Performance on PlantDoc should not be interpreted as the exact expected accuracy on:
+
+* every phone camera
+* every farm
+* every climate
+* every disease stage
+* every crop variety
+* every real-world environment
+
+---
+
+## Classification Is Not Diagnosis
+
+Visible symptoms may be caused by:
+
+* multiple diseases
+* nutrient deficiencies
+* environmental stress
+* insect damage
+* physical damage
+* image artifacts
+
+FruitGuard cannot establish a definitive agricultural diagnosis from an image alone.
+
+---
+
+# 23. Research Integrity
+
+Several decisions were made specifically to protect the integrity of the experiment.
+
+### No invented OOD results
+
+When the OOD dataset was initially empty, no score was reported.
+
+### No training on PlantDoc before evaluation
+
+PlantDoc remained external to model training.
+
+### No force-mapping unsupported classes
+
+Classes without sufficiently reliable equivalents were excluded.
+
+### Frozen PlantVillage split
+
+The same controlled test split was used for comparing the final models.
+
+### Poor results were retained
+
+The low OOD scores were not discarded, hidden, or replaced.
+
+They became the central finding of the research.
+
+---
+
+# 24. Conclusion
+
+FruitGuard began as a plant disease classification project but ultimately became an investigation into machine-learning generalization.
+
+MobileNetV3-Small achieved a perfect:
+
+```text
+100.00%
+```
+
+accuracy on the controlled PlantVillage test set.
+
+A CNN trained from scratch achieved:
+
+```text
+82.06%
+```
+
+However, on 95 external PlantDoc images, performance fell to:
+
+```text
+MobileNetV3-Small: 18.95%
+Scratch CNN: 14.74%
+```
+
+These results demonstrate a severe generalization gap between controlled and real-world image distributions.
+
+The experiment therefore answers the original research question clearly:
+
+> **Computer-vision models trained on controlled PlantVillage imagery can perform extremely well on similarly distributed held-out images while remaining unreliable when evaluated on substantially different real-world imagery.**
+
+The findings demonstrate why benchmark accuracy should not be treated as proof that an AI system will perform equally well after deployment.
+
+For FruitGuard, the biggest lesson was not how to reach 100% accuracy.
+
+It was learning to ask what that 100% actually meant.
+
+---
+
+# 25. Future Work
+
+Possible future extensions include:
+
+* collecting a larger independently photographed field dataset
+* balanced OOD coverage for all fourteen classes
+* confidence calibration
+* explicit out-of-distribution detection
 * unsupported-image rejection
-* uncertainty calibration
+* background segmentation
 * disease localization
-* larger field-image datasets
-* broader crop coverage
-* additional disease categories
-* improved domain adaptation
-* mobile-device deployment
+* Grad-CAM explainability
+* domain adaptation
+* training with more diverse field imagery
+* additional crops
+* additional diseases
+* mobile-device inference
+* comparison with vision transformers
+* cross-dataset training experiments
 
-## Experiment Log
+One particularly valuable future experiment would be to retrain or fine-tune the model using a mixture of PlantVillage and diverse real-world images, then evaluate it against a **third dataset that remains completely unseen**.
 
-### 2026-08-24 — Controlled PlantVillage evaluation
+This would test whether greater training diversity actually reduces the generalization gap.
 
-A leakage-aware research split was created from the official PlantVillage dataset.
+---
 
-Final split:
-- Training: 9,630 images
-- Validation: 2,063 images
-- Test: 2,062 images
-- Total: 13,755 images
-- Classes: 14
+# 26. Final Results Summary
 
-Where official leaf-group metadata was available, images from the same physical leaf were kept in the same split to reduce leakage.
+| Item                           | Result                      |
+| ------------------------------ | --------------------------- |
+| Target crops                   | Apple, Grape, Peach, Tomato |
+| Total classes                  | 14                          |
+| PlantVillage images used       | 13,755                      |
+| Training images                | 9,630                       |
+| Validation images              | 2,063                       |
+| Test images                    | 2,062                       |
+| OOD dataset                    | PlantDoc                    |
+| OOD images                     | 95                          |
+| OOD classes covered            | 10 / 14                     |
+| Random seed                    | 42                          |
+| MobileNet test accuracy        | 100.00%                     |
+| MobileNet OOD accuracy         | 18.95%                      |
+| MobileNet generalization gap   | 81.05 pp                    |
+| Scratch CNN test accuracy      | 82.06%                      |
+| Scratch CNN OOD accuracy       | 14.74%                      |
+| Scratch CNN generalization gap | 67.32 pp                    |
+| Final deployed model           | MobileNetV3-Small           |
 
-One exception was `Grape___healthy`, for which leaf-group metadata was unavailable. This class was split reproducibly at image level using seed 42.
+---
 
-Four metadata entries for `Grape___Leaf_blight_(Isariopsis_Leaf_Spot)` could not be matched to files and were excluded.
+# 27. Repository and Deployment
 
-### MobileNetV3-Small
+## Repository
 
-Training:
-- Epochs: 15
-- Best validation accuracy: 1.000
-- Best checkpoint: `ml/checkpoints/mobilenet_v3_best.pt`
+[https://github.com/ItzGhost-xD/FruitGuard-passionproject-csPS](https://github.com/ItzGhost-xD/FruitGuard-passionproject-csPS)
 
-Held-out PlantVillage test accuracy:
-- 1.000
+## Live FruitGuard
 
-Interpretation:
-MobileNetV3 achieved perfect accuracy on the controlled PlantVillage test set. This result should not be interpreted as proof of real-world reliability because PlantVillage images are relatively clean and standardized.
+[https://fruitguard-zeta.vercel.app](https://fruitguard-zeta.vercel.app)
 
-### Scratch CNN
+## API
 
-Training:
-- Epochs: 8
-- Best validation accuracy: 0.829
-- Final training accuracy: 0.903
+[https://fruitguard-api.onrender.com](https://fruitguard-api.onrender.com)
 
-Held-out PlantVillage test accuracy:
-- 0.8206
+## Research Files
 
-Interpretation:
-The pretrained MobileNetV3 substantially outperformed the CNN trained from scratch on the same controlled dataset, suggesting that transfer learning provided a major advantage.
+Final evaluation outputs are stored under:
 
-### Current controlled-data comparison
+```text
+ml/results/
+```
 
-| Model | Validation Accuracy | Test Accuracy |
-|---|---:|---:|
-| MobileNetV3-Small | 1.000 | 1.000 |
-| Scratch CNN | 0.829 | 0.821 |
+The frozen research split is stored at:
 
-### Next experiment — real-world OOD evaluation
+```text
+ml/data/splits/fruitguard_split_manifest.csv
+```
 
-The next stage will evaluate both models on real-world images that differ from PlantVillage in:
-- lighting
-- background
-- framing
-- camera quality
-- orientation
-- occlusion
+The OOD provenance manifest is stored at:
 
-The goal is to measure the generalization gap between controlled laboratory-style images and realistic user-submitted images.
+```text
+ml/data/ood_real/manifest.csv
+```
 
-### 2026-08-24 — OOD evaluation setup
+---
 
-The OOD evaluation pipeline was added and tested with both trained models.
+## Final Note From the Developer
 
-The first attempt returned no OOD metrics because the real-world OOD dataset had not yet been populated with usable images. No OOD result was recorded from this attempt.
+FruitGuard did not end with the result I would have expected when I first started building it.
 
-Next step:
-Collect genuine real-world images for the 14 target classes and rerun the same checkpoints without retraining.
+At the beginning, seeing a model reach 100% accuracy felt like success.
 
-python -c "import json; d=json.load(open('ml/results/mobilenet_v3_eval.json')); print(json.dumps(d.get('ood_real'), indent=2))"
+By the end, the 18.95% result taught me more.
 
-### 2026-08-24 — Real-world OOD dataset created
+It showed me why experiments need to challenge the assumptions behind their own results.
 
-A partial real-world out-of-distribution dataset was created using PlantDoc.
+A number looks impressive only when we understand what was required to produce it, what data it represents, and where it stops being reliable.
 
-- Total OOD images: 95
-- Source: PlantDoc
-- Purpose: evaluate generalization from controlled PlantVillage images to more realistic field/internet-style images
+That is what I wanted FruitGuard to demonstrate.
 
-Only classes with direct semantic correspondence between PlantDoc and FruitGuard were included.
+Not that AI can magically identify every disease from a photograph, but that responsible development requires us to test where our models stop working too.
 
-Included OOD-compatible classes:
-- Apple___Apple_scab
-- Apple___Cedar_apple_rust
-- Apple___healthy
-- Grape___Black_rot
-- Grape___healthy
-- Peach___healthy
-- Tomato___Early_blight
-- Tomato___Late_blight
-- Tomato___Leaf_Mold
-- Tomato___healthy
+**Yours truly,**
+**The Developer @ FruitGuard**
 
-Classes without sufficiently reliable direct PlantDoc equivalents were not force-mapped:
-- Apple___Black_rot
-- Grape___Esca_(Black_Measles)
-- Grape___Leaf_blight_(Isariopsis_Leaf_Spot)
-- Peach___Bacterial_spot
-
-This OOD dataset is therefore a partial-class real-world evaluation rather than a full 14-class external benchmark.
-
-### 2026-08-25 — Real-world OOD evaluation
-
-Both trained models were evaluated on an external PlantDoc-derived dataset containing 95 real-world images from 10 compatible FruitGuard classes.
-
-| Model | PlantVillage Test Accuracy | PlantDoc OOD Accuracy | Generalization Drop |
-|---|---:|---:|---:|
-| MobileNetV3-Small | 100.00% | 18.95% | 81.05 percentage points |
-| Scratch CNN | 82.06% | 14.74% | 67.32 percentage points |
-
-#### Interpretation
-
-Both models experienced a substantial decline when evaluated on images outside the controlled PlantVillage distribution.
-
-MobileNetV3-Small achieved perfect accuracy on the held-out PlantVillage test set but only 18.95% accuracy on the PlantDoc OOD set. This represents an 81.05 percentage-point generalization gap.
-
-The scratch CNN achieved 82.06% accuracy on PlantVillage and 14.74% on PlantDoc, a 67.32 percentage-point drop.
-
-Although MobileNetV3 remained the more accurate model on both datasets, its extremely high controlled-data performance did not translate into reliable real-world performance.
-
-These findings support the hypothesis that computer-vision plant disease classifiers trained primarily on controlled PlantVillage imagery can substantially overestimate their ability to classify images collected under more realistic conditions.
-
-The result also demonstrates that strong held-out accuracy alone is insufficient evidence of real-world robustness.
-
-#### Limitations
-
-The OOD dataset contained 95 images covering 10 of the 14 FruitGuard classes because sufficiently direct PlantDoc equivalents were unavailable for four classes.
-
-The OOD dataset was relatively small and was not intended to represent every possible field condition.
-
-Differences between PlantVillage and PlantDoc may include background complexity, lighting, framing, resolution, leaf orientation, disease severity, occlusion, and image source.
-
-The experiment therefore demonstrates a domain-generalization problem but does not establish an exact expected accuracy for all real-world use cases.
-
+````
