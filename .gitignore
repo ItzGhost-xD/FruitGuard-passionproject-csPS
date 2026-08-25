@@ -76,3 +76,4 @@ ml/data/**
 ml/results/*.png
 !ml/data/splits/
 !ml/data/splits/*.csv
+frontend/.vercel/

@@ -1,20 +1,15 @@
 from __future__ import annotations
 
-import sys
+import json
 from functools import lru_cache
 from pathlib import Path
 
-import torch
+import numpy as np
+import onnxruntime as ort
 from PIL import Image
-from torchvision import transforms
 
-ROOT = Path(__file__).resolve().parents[2]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-from ml.config import CHECKPOINTS, IMAGE_SIZE  # noqa: E402
-from ml.models import build_model  # noqa: E402
-from ml.taxonomy import by_id, class_ids  # noqa: E402
+from ml.config import CHECKPOINTS, IMAGE_SIZE
+from ml.taxonomy import by_id
 
 DISCLAIMER = (
     "FruitGuard is an educational identification aid, not a diagnosis or treatment "
@@ -23,39 +18,78 @@ DISCLAIMER = (
     "or local extension service."
 )
 
-TRANSFORM = transforms.Compose(
-    [
-        transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ]
-)
+ONNX_PATH = CHECKPOINTS / "mobilenet_v3_best.onnx"
+META_PATH = CHECKPOINTS / "mobilenet_v3_best.json"
+
+IMAGENET_MEAN = np.array(
+    [0.485, 0.456, 0.406],
+    dtype=np.float32,
+).reshape(1, 1, 3)
+
+IMAGENET_STD = np.array(
+    [0.229, 0.224, 0.225],
+    dtype=np.float32,
+).reshape(1, 1, 3)
 
 
-def _pick_checkpoint() -> Path | None:
-    preferred = CHECKPOINTS / "mobilenet_v3_best.pt"
-    if preferred.exists():
-        return preferred
-    found = sorted(CHECKPOINTS.glob("*_best.pt"))
-    return found[-1] if found else None
+def _prepare_image(image: Image.Image) -> np.ndarray:
+    image = image.convert("RGB")
+    image = image.resize((IMAGE_SIZE, IMAGE_SIZE))
+
+    array = np.asarray(image, dtype=np.float32) / 255.0
+    array = (array - IMAGENET_MEAN) / IMAGENET_STD
+
+    # HWC -> CHW
+    array = np.transpose(array, (2, 0, 1))
+
+    # Add batch dimension
+    array = np.expand_dims(array, axis=0)
+
+    return np.ascontiguousarray(array, dtype=np.float32)
+
+
+def _softmax(values: np.ndarray) -> np.ndarray:
+    values = values - np.max(values)
+    exp = np.exp(values)
+    return exp / np.sum(exp)
 
 
 @lru_cache(maxsize=1)
 def load_runtime():
-    path = _pick_checkpoint()
-    if path is None:
+    if not ONNX_PATH.exists() or not META_PATH.exists():
         return None
-    device = torch.device("cpu")
-    ckpt = torch.load(path, map_location=device, weights_only=False)
-    model = build_model(ckpt["model_name"], num_classes=len(ckpt["class_ids"]), pretrained=False)
-    model.load_state_dict(ckpt["state_dict"])
-    model.eval()
-    return {"model": model, "class_ids": ckpt["class_ids"], "name": ckpt["model_name"], "path": str(path)}
+
+    metadata = json.loads(
+        META_PATH.read_text(encoding="utf-8")
+    )
+
+    options = ort.SessionOptions()
+
+    # Keep memory use low for Render's small instance.
+    options.intra_op_num_threads = 1
+    options.inter_op_num_threads = 1
+    options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+    options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_BASIC
+    options.enable_cpu_mem_arena = False
+    options.enable_mem_pattern = False
+
+    session = ort.InferenceSession(
+        str(ONNX_PATH),
+        sess_options=options,
+        providers=["CPUExecutionProvider"],
+    )
+
+    return {
+        "session": session,
+        "class_ids": metadata["class_ids"],
+        "name": metadata["model_name"],
+        "path": str(ONNX_PATH),
+    }
 
 
-@torch.no_grad()
 def predict_image(image: Image.Image, top_k: int = 3) -> dict:
     runtime = load_runtime()
+
     if runtime is None:
         return {
             "model_available": False,
@@ -64,29 +98,54 @@ def predict_image(image: Image.Image, top_k: int = 3) -> dict:
             "uncertain": True,
         }
 
-    tensor = TRANSFORM(image.convert("RGB")).unsqueeze(0)
-    logits = runtime["model"](tensor)
-    probs = torch.softmax(logits, dim=1)[0]
-    values, indices = torch.topk(probs, k=min(top_k, probs.numel()))
+    tensor = _prepare_image(image)
+
+    session = runtime["session"]
+    input_name = session.get_inputs()[0].name
+
+    outputs = session.run(
+        None,
+        {input_name: tensor},
+    )
+
+    logits = outputs[0][0]
+    probs = _softmax(logits)
+
+    indices = np.argsort(probs)[::-1][:top_k]
+
     items = []
-    for conf, idx in zip(values.tolist(), indices.tolist()):
-        cid = runtime["class_ids"][idx]
+
+    for idx in indices:
+        confidence = float(probs[idx])
+
+        cid = runtime["class_ids"][int(idx)]
         meta = by_id(cid)
+
         items.append(
             {
                 "id": cid,
                 "fruit": meta["fruit"],
                 "label": meta["label"],
                 "status": meta["status"],
-                "confidence": round(float(conf), 4),
+                "confidence": round(confidence, 4),
                 "summary": meta["summary"],
                 "look_for": meta["look_for"],
             }
         )
+
     top = items[0]["confidence"] if items else 0.0
+
+    uncertain = (
+        top < 0.55
+        or (
+            len(items) > 1
+            and items[0]["confidence"] - items[1]["confidence"] < 0.12
+        )
+    )
+
     return {
         "model_available": True,
         "model_name": runtime["name"],
         "top_k": items,
-        "uncertain": top < 0.55 or (len(items) > 1 and items[0]["confidence"] - items[1]["confidence"] < 0.12),
+        "uncertain": uncertain,
     }
