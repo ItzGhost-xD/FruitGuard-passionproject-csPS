@@ -1,54 +1,155 @@
 # FruitGuard
 
-Computer vision for fruit disease and pest identification.
+**Computer vision for plant disease identification — and a research project about what happens when high model accuracy meets the real world.**
 
-**Research question:** How accurately can a computer-vision model identify common fruit diseases and pests from user-submitted images under real-world lighting and background conditions?
+**Live App:** https://fruitguard-zeta.vercel.app  
+**Live API:** https://fruitguard-api.onrender.com  
+**Repository:** https://github.com/ItzGhost-xD/FruitGuard-passionproject-csPS
 
-This is a scoped research project, not a 100-class plant encyclopedia. The first cut covers **apple, grape, peach, and tomato** (14 classes: healthy tissue plus 2–3 common conditions each). The website identifies a likely class, shows confidence, and gives short educational notes. It does **not** recommend pesticides or treatments.
+---
 
-## Four parts
+## About the Project
 
-1. **Dataset** — PlantVillage-style leaf folders in `ml/data/raw`, plus a smaller phone-photo set in `ml/data/ood_phone`.
-2. **Model** — HSV histogram + SVM baseline, a from-scratch CNN, and transfer learning (MobileNetV3, EfficientNet-B0, ResNet-18).
-3. **Website** — React frontend + FastAPI backend. Upload a photo, inspect quality (blur/lighting), then see ranked hypotheses.
-4. **Evaluation** — accuracy, precision, recall, F1, confusion matrix, and a held-out phone-photo stress test.
+FruitGuard is a computer vision research project built around a simple question:
 
-## Run locally
+> **How accurately do computer-vision models trained on controlled PlantVillage images identify common crop leaf diseases when evaluated on real-world images with varying lighting, backgrounds, framing, and image quality?**
 
-Use Python 3.11+ from the project root.
+The project began as an attempt to build a plant disease classifier, but the main goal became understanding whether a model's impressive test accuracy actually translates into reliable performance outside its training environment.
 
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r backend/requirements.txt
-uvicorn backend.app.main:app --reload --port 8000
-```
+FruitGuard focuses on **apple, grape, peach, and tomato**, covering **14 healthy and diseased classes**.
 
-In a second terminal:
+The web application allows a user to upload an image and receive:
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+- Ranked disease predictions
+- Confidence scores
+- Image-quality information
+- Symptoms associated with predicted classes
+- An uncertainty warning when appropriate
 
-Open http://localhost:5173. Until you train a checkpoint, uploads still receive an image-quality report; class scores appear after `ml/checkpoints/*_best.pt` exists.
+FruitGuard is an **educational and research tool**, not a professional agricultural diagnosis or treatment service.
 
-## Train and evaluate
+---
 
-Put images in the folder names listed in `ml/data/README.txt` and `ml/taxonomy.json`.
+## The Research
 
-```bash
-python -m ml.train --model mobilenet_v3 --epochs 8
-python -m ml.train --model scratch_cnn --epochs 12 --no-pretrained
-python -m ml.baseline_svm
-python -m ml.evaluate --checkpoint ml/checkpoints/mobilenet_v3_best.pt
-```
+The models were trained using selected classes from the **PlantVillage** dataset.
 
-Metrics land in `ml/results/` and show up on the Research page.
+Controlled evaluation used a frozen train/validation/test split designed to reduce related-image leakage where metadata allowed it.
 
-## Safety
+Two neural-network approaches were compared:
 
-Predictions are identification hypotheses for education and research. Uncertain cases should be checked by an agricultural expert. Do not use this system to choose chemical controls.
+### MobileNetV3-Small
+A transfer-learning model initialized with pretrained features.
 
-See `docs/RESEARCH.md` for dataset logging, splits, and limitation notes you will want in a write-up.
+### Scratch CNN
+A convolutional neural network trained from scratch on the FruitGuard dataset.
+
+After controlled testing, both models were evaluated on a separate **real-world out-of-distribution (OOD)** dataset created from **PlantDoc**.
+
+PlantDoc images were never used for training.
+
+---
+
+## Results
+
+| Model | PlantVillage Test Accuracy | PlantDoc OOD Accuracy | Generalization Drop |
+|---|---:|---:|---:|
+| **MobileNetV3-Small** | **100.00%** | **18.95%** | **81.05 percentage points** |
+| **Scratch CNN** | **82.06%** | **14.74%** | **67.32 percentage points** |
+
+The OOD evaluation contained **95 PlantDoc images across 10 compatible FruitGuard classes**.
+
+### Main Finding
+
+The most important result of FruitGuard was not the 100% controlled accuracy.
+
+It was the dramatic decline when the same models were exposed to less standardized real-world images.
+
+MobileNetV3 dropped from:
+
+**100.00% → 18.95%**
+
+while the scratch CNN dropped from:
+
+**82.06% → 14.74%**
+
+This demonstrates a major **domain-generalization gap**.
+
+A model can perform extremely well on images similar to its training distribution while struggling with changes in:
+
+- Backgrounds
+- Lighting
+- Framing
+- Resolution
+- Leaf orientation
+- Disease severity
+- Occlusion
+- Overall image quality
+
+Strong held-out accuracy alone therefore does not guarantee real-world reliability.
+
+---
+
+## Supported Classes
+
+FruitGuard currently contains 14 classes across four crops.
+
+### Apple
+- Apple Scab
+- Black Rot
+- Cedar Apple Rust
+- Healthy
+
+### Grape
+- Black Rot
+- Esca / Black Measles
+- Leaf Blight
+- Healthy
+
+### Peach
+- Bacterial Spot
+- Healthy
+
+### Tomato
+- Early Blight
+- Late Blight
+- Leaf Mold
+- Healthy
+
+---
+
+## Datasets
+
+### PlantVillage
+Used for model training, validation, and controlled testing.
+
+Source:  
+https://github.com/spMohanty/PlantVillage-Dataset
+
+### PlantDoc
+Used only for external real-world OOD evaluation.
+
+Source:  
+https://github.com/pratikkayal/PlantDoc-Dataset
+
+The PlantDoc evaluation dataset contains **95 sampled images** from classes that could be reasonably mapped to FruitGuard's taxonomy.
+
+Classes without sufficiently reliable equivalents were not force-mapped.
+
+---
+
+## Dataset Split
+
+The final PlantVillage research split contains:
+
+| Split | Images |
+|---|---:|
+| Train | 9,630 |
+| Validation | 2,063 |
+| Test | 2,062 |
+| **Total** | **13,755** |
+
+Random seed:
+
+```text
+42
